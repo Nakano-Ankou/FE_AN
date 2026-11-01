@@ -1,5 +1,5 @@
-import PagePlaceholder from "../PagePlaceholder"
+import AdminUserManager from "../../features/admin/AdminUserManager"
 
 export default function UsersManagement() {
-  return <PagePlaceholder title="Người dùng" description="Quản lý tài khoản người dùng." />
+  return <AdminUserManager />
 }

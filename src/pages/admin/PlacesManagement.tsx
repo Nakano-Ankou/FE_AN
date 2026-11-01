@@ -1,5 +1,5 @@
-import PagePlaceholder from "../PagePlaceholder"
+import AdminPlaceManager from "../../features/admin/AdminPlaceManager"
 
 export default function PlacesManagement() {
-  return <PagePlaceholder title="Địa điểm" description="Quản lý danh mục địa điểm ăn uống." />
+  return <AdminPlaceManager />
 }

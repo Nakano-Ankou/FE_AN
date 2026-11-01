@@ -1,5 +1,5 @@
-import PagePlaceholder from "../PagePlaceholder"
+import AdminTagManager from "../../features/admin/AdminTagManager"
 
 export default function TagsManagement() {
-  return <PagePlaceholder title="Tags hệ thống" description="Quản lý danh mục tags sở thích." />
+  return <AdminTagManager />
 }

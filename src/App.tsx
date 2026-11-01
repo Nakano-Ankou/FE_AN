@@ -42,6 +42,9 @@ import AdminDashboard from "./pages/admin/AdminDashboard"
 import UsersManagement from "./pages/admin/UsersManagement"
 import PlacesManagement from "./pages/admin/PlacesManagement"
 import TagsManagement from "./pages/admin/TagsManagement"
+import SessionBootstrap from "./features/auth/SessionBootstrap"
+import { AdminRoute, GuestOnlyRoute, ProtectedRoute } from "./features/auth/RouteGuards"
+import { useUserStore } from "./store/userStore"
 
 const userNavItems: NavItemConfig[] = [
   { key: "home", label: "Trang chủ", icon: <HomeIcon aria-hidden="true" size={20} /> },
@@ -60,6 +63,8 @@ const adminNavItems: NavItemConfig[] = [
 function WorkspaceLayout({ kind }: { kind: "user" | "admin" }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const currentUser = useUserStore((state) => state.currentUser)
+  const logout = useUserStore((state) => state.logout)
   const isAdmin = kind === "admin"
   const navItems = isAdmin ? adminNavItems : userNavItems
   const activeKey = isAdmin
@@ -99,6 +104,11 @@ function WorkspaceLayout({ kind }: { kind: "user" | "admin" }) {
       activeKey={activeKey}
       onBrandClick={() => navigate(isAdmin ? "/admin" : "/app")}
       onSelectNav={(key) => navigate(destinations[key] ?? (isAdmin ? "/admin" : "/app"))}
+      userProfile={currentUser ? { name: currentUser.username, subtitle: currentUser.email } : undefined}
+      onLogout={() => {
+        logout()
+        navigate("/login", { replace: true })
+      }}
       sidebarPromo={
         <Link
           className="focus-ring block rounded-panel bg-surface-dark p-4 text-sm font-semibold text-surface-dark-foreground"
@@ -133,38 +143,44 @@ function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/verify" element={<Verify />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<GuestOnlyRoute />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/verify" element={<Verify />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+      </Route>
 
-      <Route path="/app" element={<WorkspaceLayout kind="user" />}>
-        <Route index element={<Dashboard />} />
-        <Route path="explore" element={<Explore />} />
-        <Route path="friends" element={<Friends />} />
-        <Route path="billing" element={<Billing />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="room">
-          <Route index element={<RoomHome />} />
-          <Route path="new" element={<RoomNew />} />
-          <Route path="join" element={<Join />} />
-          <Route path="match" element={<Match />} />
-          <Route path="queue" element={<MatchmakingQueue />} />
-          <Route path=":id">
-            <Route index element={<Navigate replace to="lobby" />} />
-            <Route path="lobby" element={<Lobby />} />
-            <Route path="swipe" element={<Swipe />} />
-            <Route path="summary" element={<Summary />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/app" element={<WorkspaceLayout kind="user" />}>
+          <Route index element={<Dashboard />} />
+          <Route path="explore" element={<Explore />} />
+          <Route path="friends" element={<Friends />} />
+          <Route path="billing" element={<Billing />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="room">
+            <Route index element={<RoomHome />} />
+            <Route path="new" element={<RoomNew />} />
+            <Route path="join" element={<Join />} />
+            <Route path="match" element={<Match />} />
+            <Route path="queue" element={<MatchmakingQueue />} />
+            <Route path=":id">
+              <Route index element={<Navigate replace to="lobby" />} />
+              <Route path="lobby" element={<Lobby />} />
+              <Route path="swipe" element={<Swipe />} />
+              <Route path="summary" element={<Summary />} />
+            </Route>
           </Route>
         </Route>
       </Route>
 
-      <Route path="/admin" element={<WorkspaceLayout kind="admin" />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="users" element={<UsersManagement />} />
-        <Route path="places" element={<PlacesManagement />} />
-        <Route path="tags" element={<TagsManagement />} />
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<WorkspaceLayout kind="admin" />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="places" element={<PlacesManagement />} />
+          <Route path="tags" element={<TagsManagement />} />
+        </Route>
       </Route>
     </Routes>
   )
@@ -174,6 +190,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <BrowserRouter>
+        <SessionBootstrap />
         <AppRoutes />
       </BrowserRouter>
     </MotionConfig>
